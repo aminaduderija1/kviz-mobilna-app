@@ -1,5 +1,6 @@
 package ba.etfrma.projekat.kviz.data
 
+import ba.etfrma.projekat.kviz.model.Grupa
 import ba.etfrma.projekat.kviz.model.Predmet
 
 object PredmetStaticData {
@@ -23,15 +24,13 @@ object PredmetStaticData {
             ),
         )
     }
-    private var upisani = mutableListOf("RPR")
+    private var upisaniSaGrupom = mutableMapOf<String, Grupa>("RPR" to Grupa("G1", "RPR"))
 
     fun getUpisani(): List<Predmet> {
-        val naziviUpisanih = upisani
-        return getAll().filter { naziviUpisanih.contains(it.naziv) }
+        val naziviUpisanih = upisaniSaGrupom
+        return getAll().filter { upisaniSaGrupom.containsKey(it.naziv) }
     }
-    fun upis(naziv: String) {
-        if (upisani.none { it == naziv }) {
-            upisani.add(naziv)
-        }
+    fun upis(naziv: String, grupa : Grupa) {
+        upisaniSaGrupom[naziv] = grupa
     }
 }

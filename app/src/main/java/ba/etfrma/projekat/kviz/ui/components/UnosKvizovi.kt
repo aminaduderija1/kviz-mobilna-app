@@ -159,8 +159,12 @@ fun UnosKvizovi(onUpisano: () -> Unit) {
         }
         Button(
             onClick = {
-                PredmetStaticData.upis(seleketovaniPredmet)
-                onUpisano()
+                val grupaObjekat = GrupaStaticData.getGrupaFromPredmet(seleketovaniPredmet)
+                    .find { it.naziv == seleketovanaGrupa }
+                if (grupaObjekat != null) {
+                    PredmetStaticData.upis(seleketovaniPredmet, grupaObjekat)
+                    onUpisano()
+                }
                 seleketovaniPredmet = ""
                 seleketovanaGrupa = ""
                 seleketovanaGodina = ""
@@ -178,7 +182,7 @@ fun UnosKvizovi(onUpisano: () -> Unit) {
                     seleketovaniPredmet.isNotEmpty() &&
                     seleketovanaGrupa.isNotEmpty()
         ) {
-            Text(text = "Upiši me")
+            Text(text = "Upisi me")
         }
     }
 
