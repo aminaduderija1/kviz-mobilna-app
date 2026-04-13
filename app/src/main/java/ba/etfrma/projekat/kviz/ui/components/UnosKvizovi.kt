@@ -165,10 +165,10 @@ fun UnosKvizovi(onUpisano: () -> Unit) {
                 seleketovanaGrupa = ""
                 seleketovanaGodina = ""
             },colors = ButtonDefaults.buttonColors(
-                containerColor = ljubT1,      // Boja pozadine dugmeta
-                contentColor = Color.White,    // Boja teksta i ikone unutar dugmeta
-                disabledContainerColor = ljubS2, // Boja kada je dugme onemogućeno
-                disabledContentColor = ljubT1  // Boja teksta kada je onemogućeno
+                containerColor = ljubT1,
+                contentColor = Color.White,
+                disabledContainerColor = ljubS2,
+                disabledContentColor = ljubT1
             ),
             modifier = Modifier
                 .fillMaxWidth()
