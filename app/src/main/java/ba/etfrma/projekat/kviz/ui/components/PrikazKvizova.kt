@@ -15,7 +15,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun ShowKviz(kvizovi : List<Kviz>) {
+fun ShowKviz(
+    kvizovi : List<Kviz>,
+    modifier: Modifier = Modifier
+) {
     val sortiraniKvizovi = kvizovi.sortedBy { it.datumPocetak }
     var listapo2 = mutableListOf<List<Kviz>>()
     var listaPrivremena = mutableListOf<Kviz>()
@@ -31,7 +34,7 @@ fun ShowKviz(kvizovi : List<Kviz>) {
     }
 
     LazyColumn(
-        modifier = Modifier
+        modifier = modifier
             .padding(10.dp)
             .fillMaxSize()
             .testTag("listaKvizova")
