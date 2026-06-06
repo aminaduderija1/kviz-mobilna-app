@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "ba.etfrma.projekat.kviz"
+    namespace = "ba.etf.rma26.projekat"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
