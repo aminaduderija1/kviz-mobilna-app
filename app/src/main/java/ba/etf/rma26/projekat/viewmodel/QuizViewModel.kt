@@ -1,14 +1,20 @@
 package ba.etf.rma26.projekat.viewmodel
 
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import ba.etf.rma26.projekat.data.GrupaStaticData
-import ba.etf.rma26.projekat.data.KvizStaticData
-import ba.etf.rma26.projekat.data.PredmetStaticData
-import ba.etf.rma26.projekat.model.Kviz
+import androidx.lifecycle.viewModelScope
+import ba.etf.rma26.projekat.data.models.Grupa
+import ba.etf.rma26.projekat.data.models.Kviz
+import ba.etf.rma26.projekat.data.models.Predmet
+import ba.etf.rma26.projekat.data.repositories.AccountRepository
+import ba.etf.rma26.projekat.data.repositories.KvizRepository
+import ba.etf.rma26.projekat.data.repositories.PredmetIGrupaRepository
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import java.time.LocalDateTime
+
 
 enum class QuizFilter(val label: String) {
     MY("Svi moji kvizovi"),
@@ -19,79 +25,138 @@ enum class QuizFilter(val label: String) {
 }
 
 class QuizViewModel : ViewModel() {
-    var selectedYear by mutableStateOf("")
+    var odabranaGodina by mutableStateOf("")
         private set
-    var selectedSubject by mutableStateOf("")
+    var odabraniPredmet by mutableStateOf("")
         private set
-    var selectedGroup by mutableStateOf("")
+    var odabranaGrupa by mutableStateOf("")
         private set
-    var selectedFilter by mutableStateOf(QuizFilter.MY)
+    var odabraniFilter by mutableStateOf(QuizFilter.MY)
         private set
 
-    private var dataVersion by mutableIntStateOf(0)
+    private var sviPredmeti by mutableStateOf(listOf<Predmet>())
+    private var sveGrupeZaOdabraniPredmet by mutableStateOf(listOf<Grupa>())
 
-    val availableYears = listOf("1", "2", "3", "4", "5")
+    private var sveGrupe by mutableStateOf(listOf<Grupa>())
+    private var upisaneGrupe by mutableStateOf(listOf<Grupa>())
 
-    val availableSubjects: List<String>
+    private var sviKvizovi by mutableStateOf(listOf<Kviz>())
+    private var upisaniKvizovi by mutableStateOf(listOf<Kviz>())
+
+    val dostupneGodine = listOf("1", "2", "3", "4", "5")
+
+    val dostupniPredmeti: List<String>
         get() {
-            dataVersion
-            if (selectedYear.isBlank()) return emptyList()
-            val year = selectedYear.toIntOrNull() ?: return emptyList()
-            val enrolled = PredmetStaticData.getUpisani().map { it.naziv }
-            return PredmetStaticData.getAll()
-                .filter { it.godina == year && it.naziv !in enrolled }
+            if (odabranaGodina.isBlank()) return emptyList()
+            val godina = odabranaGodina.toIntOrNull() ?: return emptyList()
+            val upisaniPredmetiIds = upisaneGrupe.map { it.idPredmeta }
+
+            return sviPredmeti
+                .filter { it.godina == godina && it.id !in upisaniPredmetiIds }
                 .map { it.naziv }
         }
 
-    val availableGroups: List<String>
+    val dostupneGrupe: List<String>
         get() {
-            dataVersion
-            if (selectedSubject.isBlank()) return emptyList()
-            return GrupaStaticData.getGrupaFromPredmet(selectedSubject).map { it.naziv }
+            if (odabraniPredmet.isBlank()) return emptyList()
+            return sveGrupeZaOdabraniPredmet.map { it.naziv }
         }
 
-    val isEnrollEnabled: Boolean
-        get() = selectedYear.isNotBlank() && selectedSubject.isNotBlank() && selectedGroup.isNotBlank()
+    val daLiJeUpisDostupan: Boolean
+        get() = odabranaGodina.isNotBlank() && odabraniPredmet.isNotBlank() && odabranaGrupa.isNotBlank()
 
-    fun onYearSelected(year: String) {
-        selectedYear = year
-        selectedSubject = ""
-        selectedGroup = ""
+    init {
+        osvjeziSvePodatke()
     }
 
-    fun onSubjectSelected(subject: String) {
-        selectedSubject = subject
-        selectedGroup = ""
+    fun osvjeziSvePodatke() {
+        viewModelScope.launch {
+            sviPredmeti = PredmetIGrupaRepository.getPredmeti()
+            sveGrupe = PredmetIGrupaRepository.getGrupe()
+            upisaneGrupe = PredmetIGrupaRepository.getUpisaneGrupe()
+            sviKvizovi = KvizRepository.getAll()
+            upisaniKvizovi = KvizRepository.getUpisani()
+        }
     }
-
-    fun onGroupSelected(group: String) {
-        selectedGroup = group
-    }
-
-    fun onFilterSelected(filter: QuizFilter) {
-        selectedFilter = filter
-    }
-
-    fun enrollSelectedSubject() {
-        val grupa = GrupaStaticData.getGrupaFromPredmet(selectedSubject)
-            .find { it.naziv == selectedGroup } ?: return
-        PredmetStaticData.upis(selectedSubject, grupa)
-        selectedYear = ""
-        selectedSubject = ""
-        selectedGroup = ""
-        dataVersion++
-    }
-
-    fun getFilteredQuizzes(): List<Kviz> {
-        dataVersion
-        return when (selectedFilter) {
-            QuizFilter.MY -> KvizStaticData.getUpisani()
-            QuizFilter.ALL -> KvizStaticData.getAll()
-            QuizFilter.DONE -> KvizStaticData.getDone()
-            QuizFilter.FUTURE -> KvizStaticData.getFuture()
-            QuizFilter.PAST -> KvizStaticData.getNotTaken()
+    init {
+        viewModelScope.launch {
+            AccountRepository.studentHash.collectLatest { noviHash ->
+                osvjeziSvePodatke()
+            }
         }
     }
 
-    fun getFilteredCount(): Int = getFilteredQuizzes().size
+    fun onOdabranaGodina(year: String) {
+        odabranaGodina = year
+        odabraniPredmet = ""
+        odabranaGrupa = ""
+        sveGrupeZaOdabraniPredmet = emptyList()
+    }
+
+    fun onPredmetOdabran(subject: String) {
+        odabraniPredmet = subject
+        odabranaGrupa = ""
+        val predmetObjekat = sviPredmeti.find { it.naziv == subject }
+        if (predmetObjekat != null) {
+            viewModelScope.launch {
+                sveGrupeZaOdabraniPredmet = PredmetIGrupaRepository.getGrupeZaPredmet(predmetObjekat.id)
+            }
+        } else {
+            sveGrupeZaOdabraniPredmet = emptyList()
+        }
+    }
+
+    fun onGroupaOdabrana(group: String) {
+        odabranaGrupa = group
+    }
+
+    fun onFilterOdabran(filter: QuizFilter) {
+        odabraniFilter = filter
+    }
+
+    fun upisiPredmet() {
+        val grupaObjekt = sveGrupeZaOdabraniPredmet.find { it.naziv == odabranaGrupa } ?: return
+
+        viewModelScope.launch {
+            val uspjeh = PredmetIGrupaRepository.upisiUGrupu(grupaObjekt.id)
+            if (uspjeh) {
+                odabranaGodina = ""
+                odabraniPredmet = ""
+                odabranaGrupa = ""
+                sveGrupeZaOdabraniPredmet = emptyList()
+
+                sviPredmeti = PredmetIGrupaRepository.getPredmeti()
+                sveGrupe = PredmetIGrupaRepository.getGrupe()
+                upisaneGrupe = PredmetIGrupaRepository.getUpisaneGrupe()
+                sviKvizovi = KvizRepository.getAll()
+                upisaniKvizovi = KvizRepository.getUpisani()
+            }
+        }
+    }
+
+
+    fun getFilterKviz(): List<Kviz> {
+        val referentniDatum = LocalDateTime.of(2021, 5, 1, 0, 0)
+        return when (odabraniFilter) {
+            QuizFilter.ALL -> sviKvizovi
+            QuizFilter.MY -> upisaniKvizovi
+
+            QuizFilter.DONE -> upisaniKvizovi.filter { kviz ->
+                kviz.datumRada != null || kviz.osvojeniBodovi != null
+            }
+            QuizFilter.FUTURE -> upisaniKvizovi.filter { kviz ->
+                val nijeUraden = kviz.datumRada == null && kviz.osvojeniBodovi == null
+                val pocetak = kviz.datumPocetka ?: referentniDatum
+                nijeUraden && pocetak.isAfter(referentniDatum)
+            }
+
+            QuizFilter.PAST -> upisaniKvizovi.filter { kviz ->
+                val nijeUraden = kviz.datumRada == null && kviz.osvojeniBodovi == null
+                val kraj = kviz.datumkraj ?: referentniDatum
+                nijeUraden && kraj.isBefore(referentniDatum)
+            }
+        }
+    }
+
+    fun getFilteredCount(): Int = getFilterKviz().size
 }

@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -32,10 +33,10 @@ fun FilterScreen(
     viewModel: QuizViewModel,
     onShowQuizzes: () -> Unit
 ) {
-    var godinaExpanded by remember { mutableStateOf(false) }
-    var predmetExpanded by remember { mutableStateOf(false) }
-    var grupaExpanded by remember { mutableStateOf(false) }
-    var filterExpanded by remember { mutableStateOf(false) }
+    var godinaExpanded by rememberSaveable { mutableStateOf(false) }
+    var predmetExpanded by rememberSaveable { mutableStateOf(false) }
+    var grupaExpanded by rememberSaveable { mutableStateOf(false) }
+    var filterExpanded by rememberSaveable { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -52,7 +53,7 @@ fun FilterScreen(
                 .testTag("odabirGodina")
         ) {
             TextField(
-                value = viewModel.selectedYear,
+                value = viewModel.odabranaGodina,
                 onValueChange = {},
                 readOnly = true,
                 label = { Text("Odabir godine") },
@@ -63,11 +64,11 @@ fun FilterScreen(
                 expanded = godinaExpanded,
                 onDismissRequest = { godinaExpanded = false }
             ) {
-                viewModel.availableYears.forEach { year ->
+                viewModel.dostupneGodine.forEach { year ->
                     DropdownMenuItem(
                         text = { Text(year) },
                         onClick = {
-                            viewModel.onYearSelected(year)
+                            viewModel.onOdabranaGodina(year)
                             godinaExpanded = false
                         }
                     )
@@ -76,7 +77,6 @@ fun FilterScreen(
         }
 
         Spacer(modifier = Modifier.height(8.dp))
-
         ExposedDropdownMenuBox(
             expanded = predmetExpanded,
             onExpandedChange = { predmetExpanded = !predmetExpanded },
@@ -85,7 +85,7 @@ fun FilterScreen(
                 .testTag("odabirPredmet")
         ) {
             TextField(
-                value = viewModel.selectedSubject,
+                value = viewModel.odabraniPredmet,
                 onValueChange = {},
                 readOnly = true,
                 label = { Text("Odabir predmeta") },
@@ -96,11 +96,11 @@ fun FilterScreen(
                 expanded = predmetExpanded,
                 onDismissRequest = { predmetExpanded = false }
             ) {
-                viewModel.availableSubjects.forEach { subject ->
+                viewModel.dostupniPredmeti.forEach { subject ->
                     DropdownMenuItem(
                         text = { Text(subject) },
                         onClick = {
-                            viewModel.onSubjectSelected(subject)
+                            viewModel.onPredmetOdabran(subject)
                             predmetExpanded = false
                         }
                     )
@@ -118,7 +118,7 @@ fun FilterScreen(
                 .testTag("odabirGrupa")
         ) {
             TextField(
-                value = viewModel.selectedGroup,
+                value = viewModel.odabranaGrupa,
                 onValueChange = {},
                 readOnly = true,
                 label = { Text("Odabir grupe") },
@@ -129,11 +129,11 @@ fun FilterScreen(
                 expanded = grupaExpanded,
                 onDismissRequest = { grupaExpanded = false }
             ) {
-                viewModel.availableGroups.forEach { group ->
+                viewModel.dostupneGrupe.forEach { group ->
                     DropdownMenuItem(
                         text = { Text(group) },
                         onClick = {
-                            viewModel.onGroupSelected(group)
+                            viewModel.onGroupaOdabrana(group)
                             grupaExpanded = false
                         }
                     )
@@ -144,8 +144,8 @@ fun FilterScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         Button(
-            onClick = { viewModel.enrollSelectedSubject() },
-            enabled = viewModel.isEnrollEnabled,
+            onClick = { viewModel.upisiPredmet() },
+            enabled = viewModel.daLiJeUpisDostupan,
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag("dodajPredmetDugme")
@@ -165,7 +165,7 @@ fun FilterScreen(
                 .testTag("filterKvizova")
         ) {
             TextField(
-                value = viewModel.selectedFilter.label,
+                value = viewModel.odabraniFilter.label,
                 onValueChange = {},
                 readOnly = true,
                 label = { Text("Filter kvizova") },
@@ -176,11 +176,11 @@ fun FilterScreen(
                 expanded = filterExpanded,
                 onDismissRequest = { filterExpanded = false }
             ) {
-                QuizFilter.entries.forEach { filter ->
+                QuizFilter.values().forEach { filter ->
                     DropdownMenuItem(
                         text = { Text(filter.label) },
                         onClick = {
-                            viewModel.onFilterSelected(filter)
+                            viewModel.onFilterOdabran(filter)
                             filterExpanded = false
                         }
                     )
@@ -189,14 +189,12 @@ fun FilterScreen(
         }
 
         Spacer(modifier = Modifier.height(12.dp))
-
         Text(
             text = "Pronađeno je ${viewModel.getFilteredCount()} kvizova",
             modifier = Modifier.testTag("brojKvizova")
         )
 
         Spacer(modifier = Modifier.weight(1f))
-
         Button(
             onClick = onShowQuizzes,
             modifier = Modifier

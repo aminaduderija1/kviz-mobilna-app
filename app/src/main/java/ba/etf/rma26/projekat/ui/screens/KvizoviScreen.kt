@@ -10,6 +10,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import ba.etf.rma26.projekat.ui.components.ShowKviz
 import ba.etf.rma26.projekat.viewmodel.QuizViewModel
@@ -18,12 +19,16 @@ import ba.etf.rma26.projekat.viewmodel.QuizViewModel
 @Composable
 fun KvizoviScreen(
     viewModel: QuizViewModel,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onKvizKlik: (Int, String) -> Unit
 ) {
+    LaunchedEffect(Unit) {
+        viewModel.osvjeziSvePodatke()
+    }
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(viewModel.selectedFilter.label) },
+                title = { Text(viewModel.odabraniFilter.label) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
@@ -36,7 +41,8 @@ fun KvizoviScreen(
         }
     ) { paddingValues ->
         ShowKviz(
-            kvizovi = viewModel.getFilteredQuizzes(),
+            kvizovi = viewModel.getFilterKviz(),
+            onKvizKlik = onKvizKlik,
             modifier = Modifier.padding(paddingValues)
         )
     }

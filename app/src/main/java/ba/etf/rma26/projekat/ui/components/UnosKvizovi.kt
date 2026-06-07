@@ -21,22 +21,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import ba.etf.rma26.projekat.data.GrupaStaticData
-import ba.etf.rma26.projekat.data.PredmetStaticData
 import ba.etf.rma26.projekat.ui.theme.ljubS2
 import ba.etf.rma26.projekat.ui.theme.ljubT1
+import ba.etf.rma26.projekat.viewmodel.QuizViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UnosKvizovi(onUpisano: () -> Unit) {
-    var otvorenoGodina by remember { mutableStateOf(false) }
-    var seleketovanaGodina by rememberSaveable { mutableStateOf("") }
+fun UnosKvizovi(
+    viewModel: QuizViewModel,
+    onUpisano: () -> Unit
+) {
+    var otvorenoGodina by rememberSaveable { mutableStateOf(false) }
+    var otvorenoPredmet by rememberSaveable { mutableStateOf(false) }
+    var otvorenoGrupa by rememberSaveable { mutableStateOf(false) }
 
-    var otvorenoPredmet by remember { mutableStateOf(false) }
-    var seleketovaniPredmet by remember { mutableStateOf("") }
-
-    var otvorenoGrupa by remember { mutableStateOf(false) }
-    var seleketovanaGrupa by remember { mutableStateOf("") }
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -51,7 +49,7 @@ fun UnosKvizovi(onUpisano: () -> Unit) {
                 .testTag("odabirGodina")
         ) {
             TextField(
-                value = seleketovanaGodina,
+                value = viewModel.odabranaGodina,
                 onValueChange = {},
                 readOnly = true,
                 label = { Text("Odabir godine") },
@@ -63,16 +61,11 @@ fun UnosKvizovi(onUpisano: () -> Unit) {
                 expanded = otvorenoGodina,
                 onDismissRequest = { otvorenoGodina = false }
             ) {
-                val opcijeGodina = listOf(
-                    "1", "2", "3", "4", "5"
-                )
-                opcijeGodina.forEach { opcija ->
+                viewModel.dostupneGodine.forEach { opcija ->
                     DropdownMenuItem(
                         text = { Text(opcija) },
                         onClick = {
-                            seleketovanaGodina = opcija
-                            seleketovanaGrupa = ""
-                            seleketovaniPredmet = ""
+                            viewModel.onOdabranaGodina(opcija)
                             otvorenoGodina = false
                         }
                     )
@@ -88,7 +81,7 @@ fun UnosKvizovi(onUpisano: () -> Unit) {
                 .testTag("odabirPredmet")
         ) {
             TextField(
-                value = seleketovaniPredmet,
+                value = viewModel.odabraniPredmet,
                 onValueChange = {},
                 readOnly = true,
                 label = { Text("Odabir predmeta") },
@@ -100,23 +93,18 @@ fun UnosKvizovi(onUpisano: () -> Unit) {
                 expanded = otvorenoPredmet,
                 onDismissRequest = { otvorenoPredmet = false }
             ) {
-                val upisaniNazivi = PredmetStaticData.getUpisani().map { it.naziv }
-                val opcijePredmet = if (seleketovanaGodina.isEmpty()) emptyList()
-                else PredmetStaticData.getAll().filter {
-                    it.godina == seleketovanaGodina.toInt() && it.naziv !in upisaniNazivi
-                }
-                opcijePredmet.forEach { predmet ->
+                viewModel.dostupniPredmeti.forEach { predmetNaziv ->
                     DropdownMenuItem(
-                        text = { Text(predmet.naziv) },
+                        text = { Text(predmetNaziv) },
                         onClick = {
-                            seleketovaniPredmet = predmet.naziv
-                            seleketovanaGrupa = ""
+                            viewModel.onPredmetOdabran(predmetNaziv)
                             otvorenoPredmet = false
                         }
                     )
                 }
             }
         }
+
         ExposedDropdownMenuBox(
             expanded = otvorenoGrupa,
             onExpandedChange = { otvorenoGrupa = !otvorenoGrupa },
@@ -126,7 +114,7 @@ fun UnosKvizovi(onUpisano: () -> Unit) {
                 .testTag("odabirGrupa")
         ) {
             TextField(
-                value = seleketovanaGrupa,
+                value = viewModel.odabranaGrupa,
                 onValueChange = {},
                 readOnly = true,
                 label = { Text("Odabir grupe") },
@@ -138,13 +126,11 @@ fun UnosKvizovi(onUpisano: () -> Unit) {
                 expanded = otvorenoGrupa,
                 onDismissRequest = { otvorenoGrupa = false }
             ) {
-                val opcijeGrupa = GrupaStaticData.getGrupaFromPredmet(seleketovaniPredmet)
-
-                opcijeGrupa.forEach { grupa ->
+                viewModel.dostupneGrupe.forEach { grupaNaziv ->
                     DropdownMenuItem(
-                        text = { Text(grupa.naziv) },
+                        text = { Text(grupaNaziv) },
                         onClick = {
-                            seleketovanaGrupa = grupa.naziv
+                            viewModel.onGroupaOdabrana(grupaNaziv)
                             otvorenoGrupa = false
                         }
                     )
@@ -153,16 +139,10 @@ fun UnosKvizovi(onUpisano: () -> Unit) {
         }
         Button(
             onClick = {
-                val grupaObjekat = GrupaStaticData.getGrupaFromPredmet(seleketovaniPredmet)
-                    .find { it.naziv == seleketovanaGrupa }
-                if (grupaObjekat != null) {
-                    PredmetStaticData.upis(seleketovaniPredmet, grupaObjekat)
-                    onUpisano()
-                }
-                seleketovaniPredmet = ""
-                seleketovanaGrupa = ""
-                seleketovanaGodina = ""
-            },colors = ButtonDefaults.buttonColors(
+                viewModel.upisiPredmet()
+                onUpisano()
+            },
+            colors = ButtonDefaults.buttonColors(
                 containerColor = ljubT1,
                 contentColor = Color.White,
                 disabledContainerColor = ljubS2,
@@ -172,12 +152,9 @@ fun UnosKvizovi(onUpisano: () -> Unit) {
                 .fillMaxWidth()
                 .padding(16.dp)
                 .testTag("dodajPredmetDugme"),
-            enabled = seleketovanaGodina.isNotEmpty() &&
-                    seleketovaniPredmet.isNotEmpty() &&
-                    seleketovanaGrupa.isNotEmpty()
+            enabled = viewModel.daLiJeUpisDostupan
         ) {
             Text(text = "Upisi me")
         }
     }
-
 }
