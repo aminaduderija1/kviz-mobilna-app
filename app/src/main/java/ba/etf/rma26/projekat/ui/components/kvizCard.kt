@@ -30,7 +30,7 @@ import ba.etf.rma26.projekat.ui.theme.ljubT3
 import java.time.LocalDateTime
 
 fun getStatus(kviz: Kviz): Triple<Int, LocalDateTime, String> {
-    val referentniDatum = LocalDateTime.of(2021, 5, 1, 0, 0)
+    val referentniDatum = LocalDateTime.of(2021, 5, 9, 0, 0)
 
     val datumPocetka = kviz.datumPocetka ?: referentniDatum
     val datumKraja = kviz.datumkraj ?: referentniDatum

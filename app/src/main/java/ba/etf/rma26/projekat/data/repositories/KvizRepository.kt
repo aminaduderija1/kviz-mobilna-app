@@ -33,8 +33,13 @@ object KvizRepository {
     suspend fun getAll(): List<Kviz> {
         return try {
             val odgovor = kvizApi.getAll()
-            if (odgovor.isSuccessful) odgovor.body() ?: emptyList() else emptyList()
-        }
+            if (odgovor.isSuccessful) {
+                val kvizovi = odgovor.body() ?: emptyList()
+                popuniDetaljeKvizova(kvizovi)
+                kvizovi
+            } else {
+                emptyList()
+            }        }
         catch (e: Exception) {
             emptyList()
         }
@@ -51,9 +56,33 @@ object KvizRepository {
         return try {
             val studentHash = AccountRepository.getHash()
             val odgovor = kvizApi.getUpisani(studentHash)
-            if (odgovor.isSuccessful) odgovor.body() ?: emptyList() else emptyList()
-        } catch (e: Exception) {
+            if (odgovor.isSuccessful) {
+                val kvizovi = odgovor.body() ?: emptyList()
+                popuniDetaljeKvizova(kvizovi)
+                kvizovi
+            } else {
+                emptyList()
+            }        } catch (e: Exception) {
             emptyList()
+        }
+    }
+    private suspend fun popuniDetaljeKvizova(kvizovi: List<Kviz>) {
+        try {
+            val zapocetiPokusaji = TakeKvizRepository.getPocetiKvizovi() ?: emptyList()
+            for (kviz in kvizovi) {
+                val pokusaj = zapocetiPokusaji.find { it.idKviza == kviz.id }
+                if (pokusaj != null) {
+                    kviz.datumRada = java.time.LocalDateTime.of(2021, 5, 10, 0, 0)
+                    val odgovori = OdgovorRepository.getOdgovoriKviz(kviz.id)
+                    if (odgovori.isNotEmpty()) {
+                        kviz.osvojeniBodovi = odgovori.size
+                    } else {
+                        kviz.osvojeniBodovi = 0
+                    }
+                }
+            }
+        } catch (e: Exception) {
+
         }
     }
 }

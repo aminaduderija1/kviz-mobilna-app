@@ -14,5 +14,5 @@ data class Kviz(
     val nazivPredmeta: String?,
     val nazivGrupe: String?,
     var datumRada: LocalDateTime? = null,
-    var osvojeniBodovi: Float? = null
+    var osvojeniBodovi: Int? = null
 )

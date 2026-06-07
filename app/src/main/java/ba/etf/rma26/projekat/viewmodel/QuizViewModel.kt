@@ -136,7 +136,7 @@ class QuizViewModel : ViewModel() {
 
 
     fun getFilterKviz(): List<Kviz> {
-        val referentniDatum = LocalDateTime.of(2021, 5, 1, 0, 0)
+        val referentniDatum = LocalDateTime.of(2021, 5, 9, 0, 0)
         return when (odabraniFilter) {
             QuizFilter.ALL -> sviKvizovi
             QuizFilter.MY -> upisaniKvizovi
