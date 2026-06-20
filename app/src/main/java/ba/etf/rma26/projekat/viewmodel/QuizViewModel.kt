@@ -158,5 +158,25 @@ class QuizViewModel : ViewModel() {
         }
     }
 
-    fun getFilteredCount(): Int = getFilterKviz().size
+    fun getCountForFilter(filter: QuizFilter): Int {
+        val referentniDatum = LocalDateTime.of(2021, 5, 9, 0, 0)
+        val listaZaBrojanje = when (filter) {
+            QuizFilter.ALL -> sviKvizovi
+            QuizFilter.MY -> upisaniKvizovi
+            QuizFilter.DONE -> upisaniKvizovi.filter { kviz ->
+                kviz.datumRada != null || kviz.osvojeniBodovi != null
+            }
+            QuizFilter.FUTURE -> upisaniKvizovi.filter { kviz ->
+                val nijeUraden = kviz.datumRada == null && kviz.osvojeniBodovi == null
+                val pocetak = kviz.datumPocetka ?: referentniDatum
+                nijeUraden && pocetak.isAfter(referentniDatum)
+            }
+            QuizFilter.PAST -> upisaniKvizovi.filter { kviz ->
+                val nijeUraden = kviz.datumRada == null && kviz.osvojeniBodovi == null
+                val kraj = kviz.datumkraj ?: referentniDatum
+                nijeUraden && kraj.isBefore(referentniDatum)
+            }
+        }
+        return listaZaBrojanje.size
+    }
 }

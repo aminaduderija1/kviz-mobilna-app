@@ -1,6 +1,7 @@
-package ba.etf.rma26.projekat.data.repositories
+package ba.etf.rma26.projekat.data.repositories.api
 
 import ba.etf.rma26.projekat.data.models.Odgovor
+import ba.etf.rma26.projekat.data.repositories.OdgovorRequest
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET

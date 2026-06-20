@@ -12,11 +12,13 @@ import ba.etf.rma26.projekat.ui.screens.KvizoviScreen
 import ba.etf.rma26.projekat.ui.screens.TakeQuizScreen
 import ba.etf.rma26.projekat.viewmodel.QuizViewModel
 import ba.etf.rma26.projekat.viewmodel.TakeQuizViewModel
+import ba.etf.rma26.projekat.ui.screens.UpisScreen
 
 private object Destinations {
     const val FILTER = "filter"
     const val QUIZZES = "kvizovi"
     const val TAKE_QUIZ = "take_quiz"
+    const val UPIS = "upis"
 }
 
 @Composable
@@ -31,7 +33,14 @@ fun AppNavGraph() {
         composable(Destinations.FILTER) {
             FilterScreen(
                 viewModel = quizViewModel,
+                onNavigateToUpis = { navController.navigate(Destinations.UPIS) },
                 onShowQuizzes = { navController.navigate(Destinations.QUIZZES) }
+            )
+        }
+        composable(Destinations.UPIS) {
+            UpisScreen(
+                viewModel = quizViewModel,
+                onNavigateBack = { navController.popBackStack() }
             )
         }
         composable(Destinations.QUIZZES) {

@@ -2,16 +2,14 @@ package ba.etf.rma26.projekat.data.repositories
 
 import ba.etf.rma26.projekat.data.models.Grupa
 import ba.etf.rma26.projekat.data.models.Predmet
+import ba.etf.rma26.projekat.data.repositories.api.PredmetIGrupaApi
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object PredmetIGrupaRepository {
-    private val api: PredmetIGrupaApi
-        get() = Retrofit.Builder()
-            .baseUrl(ApiConfig.getBaseURL())
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(PredmetIGrupaApi::class.java)
+    private val api: PredmetIGrupaApi by lazy {
+        Globalni.build().create(PredmetIGrupaApi::class.java)
+    }
 
     suspend fun getPredmeti(): List<Predmet> {
         return try {

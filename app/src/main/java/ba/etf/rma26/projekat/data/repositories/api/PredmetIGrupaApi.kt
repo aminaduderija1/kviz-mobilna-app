@@ -1,4 +1,4 @@
-package ba.etf.rma26.projekat.data.repositories
+package ba.etf.rma26.projekat.data.repositories.api
 
 import ba.etf.rma26.projekat.data.models.Grupa
 import ba.etf.rma26.projekat.data.models.Predmet

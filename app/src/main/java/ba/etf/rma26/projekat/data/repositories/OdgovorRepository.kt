@@ -1,6 +1,7 @@
 package ba.etf.rma26.projekat.data.repositories
 
 import ba.etf.rma26.projekat.data.models.Odgovor
+import ba.etf.rma26.projekat.data.repositories.api.OdgovorApi
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -10,12 +11,9 @@ data class OdgovorRequest(
 )
 
 object OdgovorRepository {
-    private val api: OdgovorApi
-        get() = Retrofit.Builder()
-            .baseUrl(ApiConfig.getBaseURL())
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(OdgovorApi::class.java)
+    private val api: OdgovorApi by lazy {
+        Globalni.build().create(OdgovorApi::class.java)
+    }
 
     suspend fun getOdgovoriKviz(idKviza: Int): List<Odgovor> {
         return try {

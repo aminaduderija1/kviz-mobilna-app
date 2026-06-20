@@ -46,7 +46,7 @@ fun TakeQuizScreen(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(text = "Kviz Završen!", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+                    Text(text = "Kviz Zavrsen!", fontSize = 26.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = "Ukupno bodova: ${viewModel.osvojeniBodoviRezultat}",
@@ -115,13 +115,13 @@ fun TakeQuizScreen(
                             .padding(vertical = 16.dp)
                     ) {
                         val tekstDugmeta = if (viewModel.trenutnoPitanjeIndex == viewModel.pitanja.size - 1)
-                            "Zavrsi kviz i posalji" else "Sljedeze pitanje"
+                            "Zavrsi kviz i posalji" else "Sljedece pitanje"
                         Text(tekstDugmeta)
                     }
                 }
             } else {
                 Text(
-                    text = "Grezka pri ucitavanju.",
+                    text = "Greska pri ucitavanju.",
                     modifier = Modifier.align(Alignment.Center)
                 )
             }

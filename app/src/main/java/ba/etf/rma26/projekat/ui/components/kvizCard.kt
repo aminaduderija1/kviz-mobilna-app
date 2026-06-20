@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -24,141 +26,111 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ba.etf.rma26.projekat.R
 import ba.etf.rma26.projekat.data.models.Kviz
-import ba.etf.rma26.projekat.ui.theme.ljubS2
-import ba.etf.rma26.projekat.ui.theme.ljubT1
-import ba.etf.rma26.projekat.ui.theme.ljubT3
-import java.time.LocalDateTime
-
-fun getStatus(kviz: Kviz): Triple<Int, LocalDateTime, String> {
-    val referentniDatum = LocalDateTime.of(2021, 5, 9, 0, 0)
-
-    val datumPocetka = kviz.datumPocetka ?: referentniDatum
-    val datumKraja = kviz.datumkraj ?: referentniDatum
-    val datumRada = kviz.datumRada
-
-    if (datumRada != null || kviz.osvojeniBodovi != null) {
-        return Triple(R.drawable.plava, datumRada ?: referentniDatum, "Plava")
-    } else if (datumPocetka.isAfter(referentniDatum)) {
-        return Triple(R.drawable.zuta, datumPocetka, "Zuta")
-    } else if (datumKraja.isBefore(referentniDatum)) {
-        return Triple(R.drawable.crvena, datumKraja, "Crvena")
-    }
-    return Triple(R.drawable.zelena, datumKraja, "Zelena")
-}
+import ba.etf.rma26.projekat.data.models.KvizStatusBoja
+import ba.etf.rma26.projekat.data.models.getStatus
 
 @Composable
 fun KvizCard(
     kviz: Kviz,
     modifier: Modifier = Modifier
 ) {
-    val status = getStatus(kviz)
-    val boja = status.first
-    val datum = status.second
-    val desc = status.third
+    val status = kviz.getStatus()
+
+    val (ikonaRes, contentDesc) = when (status.boja) {
+        KvizStatusBoja.PLAVA  -> R.drawable.plava  to "Urađen"
+        KvizStatusBoja.ZUTA   -> R.drawable.zuta   to "Budući"
+        KvizStatusBoja.ZELENA -> R.drawable.zelena to "Aktivan"
+        KvizStatusBoja.CRVENA -> R.drawable.crvena to "Istekao"
+    }
 
     Card(
         modifier = modifier
-            .padding(7.dp)
+            .padding(8.dp)
             .testTag("kviz_item_${kviz.naziv}"),
-        colors = CardDefaults.cardColors(containerColor = ljubT3),
-        shape = RoundedCornerShape(18.dp),
-        elevation = CardDefaults.cardElevation(4.dp)
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
     ) {
         Column(
             modifier = Modifier
-                .padding(7.dp)
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(16.dp),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
         ) {
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp)
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
                     text = kviz.nazivPredmeta ?: "",
-                    modifier = Modifier.align(Alignment.Center),
-                    fontSize = 25.sp,
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(end = 24.dp),
+                    fontSize = 14.sp,
                     fontFamily = FontFamily.Monospace,
-                    color = ljubT1,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 3.sp
+                    letterSpacing = 1.sp
                 )
                 Image(
-                    painter = painterResource(id = boja),
-                    contentDescription = desc,
+                    painter = painterResource(id = ikonaRes),
+                    contentDescription = contentDesc,
                     modifier = Modifier
-                        .size(17.dp)
+                        .size(16.dp)
                         .align(Alignment.TopEnd)
                         .testTag("kviz_status_icon")
                 )
             }
-            Card(
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = kviz.naziv,
+                fontSize = 16.sp,
+                fontFamily = FontFamily.SansSerif,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                letterSpacing = 0.5.sp
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = "Datum: %02d.%02d.%d".format(
+                    status.datum.dayOfMonth,
+                    status.datum.monthValue,
+                    status.datum.year
+                ),
+                fontSize = 14.sp,
+                fontFamily = FontFamily.SansSerif,
+                fontWeight = FontWeight.Normal,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = ljubS2)
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(5.dp)
-                    ) {
-                        Text(
-                            text = kviz.naziv,
-                            fontSize = 18.sp,
-                            modifier = Modifier.align(Alignment.Center),
-                            fontFamily = FontFamily.SansSerif,
-                            fontWeight = FontWeight.Light,
-                            color = ljubT1,
-                            letterSpacing = 2.sp
-                        )
-                    }
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(2.dp)
-                    ) {
-                        Text(
-                            text = "%02d.%02d.%d".format(
-                                datum.dayOfMonth,
-                                datum.monthValue,
-                                datum.year
-                            ),
-                            fontSize = 18.sp,
-                            modifier = Modifier.align(Alignment.Center),
-                            fontFamily = FontFamily.SansSerif,
-                            fontWeight = FontWeight.Light,
-                            color = ljubT1,
-                            letterSpacing = 3.sp
-                        )
-                    }
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(10.dp)
-                    ) {
-                        Text(
-                            text = "${kviz.trajanje} min",
-                            modifier = Modifier.align(Alignment.CenterStart),
-                            fontSize = 18.sp,
-                            fontFamily = FontFamily.SansSerif,
-                            fontWeight = FontWeight.Light,
-                            color = ljubT1,
-                            letterSpacing = 3.sp
-                        )
-                        if (kviz.osvojeniBodovi != null) {
-                            Text(
-                                text = "${kviz.osvojeniBodovi}",
-                                modifier = Modifier.align(Alignment.CenterEnd),
-                                fontSize = 18.sp,
-                                fontFamily = FontFamily.SansSerif,
-                                fontWeight = FontWeight.Light,
-                                color = ljubT1,
-                                letterSpacing = 3.sp
-                            )
-                        }
-                    }
+                Text(
+                    text = "${kviz.trajanje} min",
+                    fontSize = 14.sp,
+                    fontFamily = FontFamily.SansSerif,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                if (kviz.osvojeniBodovi != null) {
+                    Text(
+                        text = "Bodovi: ${kviz.osvojeniBodovi}",
+                        fontSize = 14.sp,
+                        fontFamily = FontFamily.SansSerif,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
             }
         }
