@@ -1,22 +1,22 @@
-# Mobilna aplikacija za fakultetske kvizove
+# University Quiz Mobile Application
 
-Android aplikacija razvijena u okviru predmeta Razvoj mobilnih aplikacija. Aplikacija omogućava kreiranje, upravljanje i rješavanje kvizova po predmetima.
-
----
-
-## Tehnologije i biblioteke
-
-* **Jezik:** Kotlin
-* **UI Framework:** Jetpack Compose
-* **Arhitektura:** MVVM (Model-View-ViewModel)
-* **Navigacija:** Jetpack Navigation (State Hoisting koncept)
-* **Mrežni sloj:** Retrofit (REST API)
-* **Asinhrono programiranje:** Kotlin Coroutines (`suspend` funkcije)
+An Android application developed for the Mobile Application Development course. The application enables the creation, management, and solving of quizzes categorized by university subjects.
 
 ---
 
-## Glavne funkcionalnosti
+## Technologies & Libraries
 
-* **Upravljanje predmetima i kvizovima:** Pregled predmeta, filtriranje i pristup kvizovima po oblastima.
-* **Interaktivno rješavanje kvizova:** Dinamičko učitavanje pitanja, odabir odgovora i prikaz rezultata u realnom vremenu.
-* **REST API sinhronizacija:** Asinhrono preuzimanje i slanje podataka na backend servis pomoću Retrofit-a i Kotlin Coroutines.
+- **Language:** Kotlin
+- **UI Framework:** Jetpack Compose
+- **Architecture:** MVVM (Model-View-ViewModel)
+- **Navigation:** Jetpack Navigation (State Hoisting concept)
+- **Network Layer:** Retrofit (REST API)
+- **Asynchronous Programming:** Kotlin Coroutines (`suspend` functions)
+
+---
+
+## Key Features
+
+- **Subject and Quiz Management:** Browse subjects, filter content, and access quizzes by category.
+- **Interactive Quiz Solving:** Dynamic question loading, answer selection, and real-time score display.
+- **REST API Synchronization:** Asynchronous fetching and submission of data to a backend service using Retrofit and Kotlin Coroutines.
